@@ -4,11 +4,12 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: ur_ros2
+    ports:
+      - 50002:50002
     environment:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
-      - ROBOT_IP=${ROBOT_IP:-192.168.1.10}  # Default IP for real robot, override with environment
-      - USE_SIMULATION=${USE_SIMULATION:-true}  # Default to simulation mode
+      - ROBOT_IP=${ROBOT_IP:-172.16.191.143}  # Default IP for real robot, override with environment
     volumes:
       - ./src/my_package:/ros2_ws/src/my_package
       - /tmp/.X11-unix:/tmp/.X11-unix
