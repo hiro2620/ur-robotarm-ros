@@ -9,13 +9,14 @@ RUN apt-get update -q && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     git \
-    python3-pip \
-    python3-colcon-common-extensions \
-    python3-rosdep \
-    python3-vcstool \
+    # python3-pip \
+    # python3-colcon-common-extensions \
+    # python3-rosdep \
+    # python3-vcstool \
     vim \
     wget \
     curl \
+    ros-humble-ur \
     && rm -rf /var/lib/apt/lists/*
 
 
@@ -24,8 +25,8 @@ WORKDIR /ros2_ws
 RUN mkdir -p /ros2_ws/src
 
 # Clone the necessary repositories
-RUN cd src && git clone https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver.git -b humble --depth 1
 RUN cd src && git clone https://github.com/UniversalRobots/Universal_Robots_ROS2_Gazebo_Simulation.git -b humble --depth 1
+RUN cd src && git clone https://github.com/panagelak/rq_fts_ros2_driver.git --depth 1
 
 # Install dependencies
 RUN apt-get update -q && \
@@ -34,7 +35,7 @@ RUN apt-get update -q && \
     rm -rf /var/lib/apt/lists/*
 
 # Build the workspace
-RUN . /opt/ros/humble/setup.sh && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+RUN . /opt/ros/humble/setup.sh && colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
 
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc && \
     echo "source /ros2_ws/install/setup.bash" >> ~/.bashrc
