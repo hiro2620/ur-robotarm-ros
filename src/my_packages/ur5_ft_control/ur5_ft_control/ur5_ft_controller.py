@@ -36,7 +36,7 @@ class UR5FTController(Node):
         self.declare_parameter('torque_threshold', 1.0)  # Nm
         self.declare_parameter('position_scaling', 0.001)  # Scale factor for position commands (m/N)
         self.declare_parameter('rotation_scaling', 0.01)  # Scale factor for rotation commands (rad/Nm)
-        self.declare_parameter('planning_group', 'ur5_arm')  # MoveIt2プランニンググループ名
+        self.declare_parameter('planning_group', 'ur_manipulator')  # MoveIt2プランニンググループ名
         
         # Get parameter values
         self.force_threshold = self.get_parameter('force_threshold').value
@@ -52,7 +52,7 @@ class UR5FTController(Node):
         # Create subscription to FT300 sensor data
         self.ft_subscription = self.create_subscription(
             FTSensor,
-            '/robotiq_ft_sensor_readings',  # Default topic for FT300 sensor readings
+            '/robotiq_force_torque_sensor_broadcaster/wrench',  # Default topic for FT300 sensor readings
             self.ft_sensor_callback,
              10,  # QoS profile depth
             callback_group=self.ft_callback_group
