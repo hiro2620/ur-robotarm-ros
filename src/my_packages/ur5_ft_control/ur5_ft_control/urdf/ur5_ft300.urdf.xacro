@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="ur5_ft300">
+
+  <!-- Import UR5 robot arm macro -->
+  <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro" />
+  
+  <!-- Import Robotiq FT300 sensor macro -->
+  <xacro:include filename="$(find robotiq_ft_sensor_description)/urdf/robotiq_ft300.urdf.xacro" />
+  
+  <!-- Import Robotiq FT sensor ros2_control macro -->
+  <xacro:include filename="$(find robotiq_ft_sensor_description)/urdf/robotiq_fts.ros2_control.xacro" />
+
+  <!-- Parameters -->
+  <xacro:arg name="tf_prefix" default="" />
+  <xacro:arg name="name" default="ur5_ft300" />
+
+   <xacro:property name="initial_positions_file" default="$(find ur_description)/config/initial_positions.yaml"/>
+
+  <!-- create link fixed to the "world" -->
+  <link name="world" />
+
+       <link name="ground_plane">
+       <visual>
+         <origin rpy="0 0 0" xyz="0 0 0"/>
+         <geometry>
+           <box size="5 5 0"/>
+         </geometry>
+         <material name="ground_white">
+           <color rgba="1 1 1 0.5"/>
+         </material>
+       </visual>
+       <collision>
+         <origin rpy="0 0 0" xyz="0 0 0"/>
+         <geometry>
+           <box size="5 5 0"/>
+         </geometry>
+       </collision>
+     </link>
+
+  <joint name="ground_plane_joint" type="fixed">
+    <origin xyz="0 0 -0.01" rpy="0 0 0"/>
+    <parent link="world"/>
+    <child link="ground_plane"/>
+  </joint>
+
+  <!-- UR5 robot arm -->
+  <xacro:ur_robot
+     name="$(arg name)"
+     tf_prefix="$(arg tf_prefix)"
+     parent="world"
+     joint_limits_parameters_file="$(find ur_description)/config/$(arg ur_type)/joint_limits.yaml"
+     kinematics_parameters_file="$(find ur_description)/config/$(arg ur_type)/default_kinematics.yaml"
+     physical_parameters_file="$(find ur_description)/config/$(arg ur_type)/physical_parameters.yaml"
+     visual_parameters_file="$(find ur_description)/config/$(arg ur_type)/visual_parameters.yaml"
+     transmission_hw_interface=""
+     safety_limits="false"
+     safety_pos_margin="0.15"
+     safety_k_position="20"
+     use_fake_hardware="true"
+     fake_sensor_commands="false"
+     sim_gazebo="true"
+     sim_ignition="true"
+     headless_mode="false"
+     initial_positions="${xacro.load_yaml(initial_positions_file)}"
+     use_tool_communication="false"
+     tool_voltage="24"
+     tool_parity="0"
+     tool_baud_rate="115200"
+     tool_stop_bits="1"
+     tool_rx_idle_chars="1.5"
+     tool_tx_idle_chars="3.5"
+     tool_device_name="/tmp/ttyUR"
+     tool_tcp_port="54321"
+     robot_ip="0.0.0.0"
+     script_filename=""
+     output_recipe_filename=""
+     input_recipe_filename=""
+     reverse_ip="0.0.0.0"
+     script_command_port="50004"
+     reverse_port="50001"
+     script_sender_port="50002"
+     trajectory_port="50003"
+    >
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:ur_robot>
+
+  <!-- Robotiq FT300 sensor attached to the UR5 tool0 frame -->
+  <xacro:robotiq_ft300 parent="tool0" tf_prefix="">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:robotiq_ft300>
+
+  <!-- Robotiq FT sensor hardware interface -->
+  <!-- <xacro:robotiq_fts_ros2_control
+    name="robotiq_ft_sensor"
+    use_fake_mode="$(arg use_fake_hardware)"
+    max_retries="$(arg max_retries)"
+    read_rate="$(arg read_rate)"
+    ftdi_id="$(arg ftdi_id)"
+    tf_prefix=""
+  /> -->
+
+  <!-- Create a fixed tool frame that can be used as end-effector frame -->
+  <!-- <link name="ft300_tool_frame"/>
+  <joint name="ft300_tool_joint" type="fixed">
+    <origin xyz="0 0 0.02" rpy="0 0 0"/>
+    <parent link="wrist_3_link"/>
+    <child link="ft300_tool_frame"/>
+  </joint> -->
+
+</robot>

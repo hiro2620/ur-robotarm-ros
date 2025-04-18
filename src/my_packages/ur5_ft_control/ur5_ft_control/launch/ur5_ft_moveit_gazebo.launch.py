@@ -53,28 +53,28 @@ def launch_setup(context, *args, **kwargs):
             "use_sim_time": "true",
             "launch_rviz": "true",
             "use_fake_hardware": "true",  # to change moveit default controller to joint_trajectory_controller
-        }.items()
+        }.items(),
     )
 
     # UR5 FTコントローラノードの設定
-    ur5_ft_controller_node = Node(
-        package='ur5_ft_control',
-        executable='ur5_ft_controller',
-        name='ur5_ft_controller',
-        output='screen',
-        parameters=[{
-            'force_threshold': LaunchConfiguration('force_threshold'),
-            'torque_threshold': LaunchConfiguration('torque_threshold'),
-            'position_scaling': LaunchConfiguration('position_scaling'),
-            'rotation_scaling': LaunchConfiguration('rotation_scaling'),
-            'planning_group': LaunchConfiguration('planning_group'),
-        }],
-    )
+    # ur5_ft_controller_node = Node(
+    #     package='ur5_ft_control',
+    #     executable='ur5_ft_controller',
+    #     name='ur5_ft_controller',
+    #     output='screen',
+    #     parameters={
+    #         'force_threshold': LaunchConfiguration('force_threshold'),
+    #         'torque_threshold': LaunchConfiguration('torque_threshold'),
+    #         'position_scaling': LaunchConfiguration('position_scaling'),
+    #         'rotation_scaling': LaunchConfiguration('rotation_scaling'),
+    #         'planning_group': LaunchConfiguration('planning_group'),
+    #     }.items(),
+    # )
 
     nodes_to_launch = [
         ur_control_launch,
         moveit_launch,
-        ur5_ft_controller_node,
+        # ur5_ft_controller_node,
     ]
     return nodes_to_launch
     
@@ -116,7 +116,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "description_file",
-            default_value="u5_ft300.urdf.xacro",
+            default_value="ur5_ft300.urdf.xacro",
             description="URDF/XACRO description file with the robot.",
         )
     )
@@ -145,6 +145,5 @@ def generate_launch_description():
         )
     )
 
-
     # LaunchDescriptionの作成
-    return LaunchDescription([declared_arguments + [OpaqueFunction(function=launch_setup)]])
+    return LaunchDescription(declared_arguments + [OpaqueFunction(function=launch_setup)])
