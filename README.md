@@ -20,3 +20,7 @@ ros2 launch ur_moveit_config ur_moveit.launch.py ur_type:=ur5 launch_rviz:=true
 ```bash
 ros2 launch ur5_ft_control ur5_ft_control.launch.py
 ```
+
+```bash
+ros2 topic echo /force_torque_sensor_broadcaster/wrench
+```
