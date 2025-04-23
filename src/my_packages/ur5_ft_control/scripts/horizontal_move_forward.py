@@ -32,6 +32,7 @@ class HorizontalMover(Node):
         self.declare_parameter('duration', 2.0)  # Duration of movement in seconds
         self.declare_parameter('twist_topic', '/twist_controller/twist_cmd')  # Optional twist controller topic
         self.declare_parameter('use_twist_controller', False)  # Whether to use twist controller or joint trajectory
+        self.declare_parameter('forward_position_topic', '/forward_position_controller/commands')
         
         # Get parameters
         self.distance = self.get_parameter('distance').value
@@ -41,6 +42,7 @@ class HorizontalMover(Node):
         self.duration = self.get_parameter('duration').value
         self.twist_topic = self.get_parameter('twist_topic').value
         self.use_twist_controller = self.get_parameter('use_twist_controller').value
+        self.forward_position_topic = self.get_parameter('forward_position_topic').value
         
         # Validate direction parameter
         if self.direction not in ['x', 'y', 'z']:
@@ -83,6 +85,13 @@ class HorizontalMover(Node):
                 self.twist_topic,
                 10
             )
+        
+        # Publisher for forward_position_controller
+        self.forward_position_publisher = self.create_publisher(
+            JointState,
+            self.forward_position_topic,
+            10
+        )
         
         self.is_controlling = False
         self.get_logger().info('Waiting for joint states...')
@@ -275,73 +284,38 @@ class HorizontalMover(Node):
         self.create_timer(1.0, lambda: rclpy.shutdown())
         
     def send_joint_trajectory(self, movement_vector):
-        """Send a joint trajectory to move in the specified direction"""
-        self.get_logger().info('Using joint trajectory controller for direct movement')
-        
+        """Send a joint state command to move in the specified direction using forward_position_controller"""
+        self.get_logger().info('Using forward_position_controller for direct movement')
+
         if len(self.joint_names) == 0 or self.current_joint_positions is None:
             self.get_logger().error('No joint states received')
             self.is_controlling = False
             return
-            
+
         # Calculate a simple differential kinematics approximation
-        # This is a simplified approach that works for small movements
-        
-        # Create a joint trajectory message
-        trajectory_msg = JointTrajectory()
-        trajectory_msg.header.stamp = self.get_clock().now().to_msg()
-        trajectory_msg.joint_names = self.joint_names
-        
-        # Start point - current position
-        start_point = JointTrajectoryPoint()
-        start_point.positions = list(self.current_joint_positions)
-        start_point.time_from_start = rclpy.duration.Duration(seconds=0.0).to_msg()
-        
-        # End point - with small differential adjustments to joints that affect tool movement
-        end_point = JointTrajectoryPoint()
-        end_point.positions = list(self.current_joint_positions)
-        
-        # Apply differential adjustments to joints based on movement vector
-        # This is a simplified approach - in a real system you would use
-        # the Jacobian matrix of the robot for proper differential kinematics
-        
-        # Simplified approach: adjust the joints that most affect end effector position
-        # For UR5, the last three joints (wrist) primarily affect orientation
-        # The first three joints primarily affect position
-        
-        # Scale factor to convert cartesian movement to joint movement
-        # This will need tuning based on robot kinematics
-        scale_factor = 0.5  
-        
-        # Apply scaled movements to joints based on movement direction
-        # Joint 0 (shoulder pan) affects X-Y position
-        # Joint 1 (shoulder lift) and Joint 2 (elbow) affect Z and radius
-        # This is a simplified approximation
-        
-        # Movement in X-Y plane primarily affects shoulder pan
+        scale_factor = 0.5
+
+        # Copy current positions
+        new_positions = list(self.current_joint_positions)
+
         xy_magnitude = np.sqrt(movement_vector[0]**2 + movement_vector[1]**2)
         if xy_magnitude > 0:
-            # Calculate the angle to move the shoulder pan joint
             angle = np.arctan2(movement_vector[1], movement_vector[0])
-            # Adjust shoulder pan (joint 0)
-            end_point.positions[0] += scale_factor * xy_magnitude * np.cos(angle - end_point.positions[0])
-        
-        # Z movement primarily affects shoulder lift and elbow
+            new_positions[0] += scale_factor * xy_magnitude * np.cos(angle - new_positions[0])
+
         if abs(movement_vector[2]) > 0:
-            # Adjust shoulder lift (joint 1) and elbow (joint 2)
-            end_point.positions[1] += scale_factor * movement_vector[2] * 0.7  # 70% to shoulder
-            end_point.positions[2] += scale_factor * movement_vector[2] * 0.3  # 30% to elbow
-        
-        # Set time for the end point
-        end_point.time_from_start = rclpy.duration.Duration(seconds=self.duration).to_msg()
-        
-        # Add points to trajectory
-        trajectory_msg.points.append(start_point)
-        trajectory_msg.points.append(end_point)
-        
-        # Publish trajectory
-        self.joint_trajectory_publisher.publish(trajectory_msg)
-        self.get_logger().info(f'Joint trajectory sent, movement will complete in {self.duration} seconds')
-        
+            new_positions[1] += scale_factor * movement_vector[2] * 0.7
+            new_positions[2] += scale_factor * movement_vector[2] * 0.3
+
+        # Publish the new joint positions as a JointState message
+        js_msg = JointState()
+        js_msg.header.stamp = self.get_clock().now().to_msg()
+        js_msg.name = self.joint_names
+        js_msg.position = new_positions
+
+        self.forward_position_publisher.publish(js_msg)
+        self.get_logger().info(f'JointState command sent, movement will complete in {self.duration} seconds')
+
         # Create timer to set control flag to false after movement completes
         self.stop_timer = self.create_timer(self.duration + 0.5, self.movement_complete)
     
