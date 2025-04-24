@@ -9,13 +9,10 @@ RUN apt-get update -q && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     git \
-    # python3-pip \
-    # python3-colcon-common-extensions \
-    # python3-rosdep \
-    # python3-vcstool \
-    vim \
     wget \
     curl \
+    ros-humble-ros2-control \
+    ros-humble-ros2-controllers \
     ros-humble-ur \
     && rm -rf /var/lib/apt/lists/*
 
@@ -26,7 +23,7 @@ RUN mkdir -p /ros2_ws/src
 
 # Clone the necessary repositories
 RUN cd src && git clone https://github.com/UniversalRobots/Universal_Robots_ROS2_Gazebo_Simulation.git -b humble --depth 1
-RUN cd src && git clone https://github.com/panagelak/rq_fts_ros2_driver.git --depth 1
+# RUN cd src && git clone https://github.com/panagelak/rq_fts_ros2_driver.git --depth 1
 
 # Install dependencies
 RUN apt-get update -q && \
