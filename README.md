@@ -5,7 +5,7 @@ PolyscopeにexternalControlというURCapをインストールする。
 https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver リポジトリの`/ur_robot_driver/resources/externalcontrol-x.x.x.urcap`をUSBメモリに入れて読み込む。
 #### 2. プログラム作成
 ティーチペンダント(UR5に付いているタブレット)で、Setup Robot > URCapsで、externalControlブロックを入れたプログラムを作成し、適当な名前で保存する。
-
+externalControlの設定でPCのIPアドレスを設定する。(ポートはデフォルトの50002のままで良い。ドライバのlaunchオプションで設定できる。)
 ### PC
 #### 1. Dockerコンテナをビルドする。
 ```bash
