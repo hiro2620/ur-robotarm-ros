@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+"""
+PD制御でツールの向きを保ったまま一定の力で押し当てる。
+"""
+
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import WrenchStamped
@@ -7,14 +11,17 @@ from geometry_msgs.msg import TwistStamped
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 import numpy as np
+from collections import deque
 
 TARGET_FORCE_Z = 5.0  # ツール軸方向（Z軸）の目標押し付け力[N]
 MIN_FORCE = 0.5
 MAX_FORCE = 20.0
 MAX_VELOCITY = 0.2
 FORCE_ERR_TORLERANCE = TARGET_FORCE_Z*0.1  # 力の誤差許容範
+SENSOR_AVERAGE_WINDOW = 10  # センサ値の移動平均ウィンドウサイズ
 KP = -8.0
-KD = -0.1  # Dゲインを追加
+KD = -0.1
+
 
 class ForceFollowNode(Node):
     def __init__(self):
@@ -29,6 +36,7 @@ class ForceFollowNode(Node):
         self.initial_frame_id = None  # 初期ツール姿勢のframe_idを保存
         self.prev_force_error = None
         self.prev_time = None
+        self.force_buffer = deque(maxlen=SENSOR_AVERAGE_WINDOW)  # 最新10個の力を保存
 
         # /servo_node/start_servoサービスを呼び出す
         client = self.create_client(Trigger, '/servo_node/start_servo')
@@ -57,15 +65,23 @@ class ForceFollowNode(Node):
             self.get_logger().info(f'Initial force and frame_id set: {self.initial_frame_id}')
             return
 
-        # 現在の力（オフセット補正済み）
+        # オフセット補正済みの力をバッファに追加
         measured_force = current_force - self.initial_force
+        self.force_buffer.append(measured_force)
+
+        # バッファが十分に溜まるまで待つ
+        if len(self.force_buffer) < self.force_buffer.maxlen:
+            self.get_logger().info('Waiting for force buffer to fill...')
+            return
+
+        # 移動平均を計算
+        avg_force = np.mean(np.array(self.force_buffer), axis=0)
 
         # ツール軸（Z軸）方向の押し付け力
-        # frame_idが変わらない前提で、Z軸方向成分を抽出
-        force_tool_z = measured_force[2]  # ツールZ軸方向
+        force_tool_z = avg_force[2]  # ツールZ軸方向
 
         force_tool_z_abs = abs(force_tool_z)
-        self.get_logger().info(f'Tool Z force: {force_tool_z:.3f} (abs: {force_tool_z_abs:.3f})')
+        self.get_logger().info(f'Tool Z force (avg): {force_tool_z:.3f} (abs: {force_tool_z_abs:.3f})')
 
         # 押し付け力が小さすぎる/大きすぎる場合は停止
         if force_tool_z_abs < MIN_FORCE or force_tool_z_abs > MAX_FORCE:

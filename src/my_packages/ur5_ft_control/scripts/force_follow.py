@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+"""
+TFセンサーの力ベクトル方向にツールを追従する。
+つまり、先端を握って力を掛けると動く。
+"""
+
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import WrenchStamped

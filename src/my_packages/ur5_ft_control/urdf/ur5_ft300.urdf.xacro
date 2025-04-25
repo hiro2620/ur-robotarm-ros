@@ -88,23 +88,4 @@
   <xacro:robotiq_ft300 parent="tool0" tf_prefix="">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:robotiq_ft300>
-
-  <!-- Robotiq FT sensor hardware interface -->
-  <!-- <xacro:robotiq_fts_ros2_control
-    name="robotiq_ft_sensor"
-    use_fake_mode="$(arg use_fake_hardware)"
-    max_retries="$(arg max_retries)"
-    read_rate="$(arg read_rate)"
-    ftdi_id="$(arg ftdi_id)"
-    tf_prefix=""
-  /> -->
-
-  <!-- Create a fixed tool frame that can be used as end-effector frame -->
-  <!-- <link name="ft300_tool_frame"/>
-  <joint name="ft300_tool_joint" type="fixed">
-    <origin xyz="0 0 0.02" rpy="0 0 0"/>
-    <parent link="wrist_3_link"/>
-    <child link="ft300_tool_frame"/>
-  </joint> -->
-
 </robot>

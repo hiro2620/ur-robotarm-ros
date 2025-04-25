@@ -56,21 +56,6 @@ def launch_setup(context, *args, **kwargs):
         }.items(),
     )
 
-    # UR5 FTコントローラノードの設定
-    # ur5_ft_controller_node = Node(
-    #     package='ur5_ft_control',
-    #     executable='ur5_ft_controller',
-    #     name='ur5_ft_controller',
-    #     output='screen',
-    #     parameters={
-    #         'force_threshold': LaunchConfiguration('force_threshold'),
-    #         'torque_threshold': LaunchConfiguration('torque_threshold'),
-    #         'position_scaling': LaunchConfiguration('position_scaling'),
-    #         'rotation_scaling': LaunchConfiguration('rotation_scaling'),
-    #         'planning_group': LaunchConfiguration('planning_group'),
-    #     }.items(),
-    # )
-
     nodes_to_launch = [
         ur_control_launch,
         moveit_launch,
