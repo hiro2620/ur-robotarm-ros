@@ -32,7 +32,7 @@ MoveIt2のGUI(Rviz)でプランニングするときは、`initial_joint_control
 
 #### 2. ロボット側のプログラム実行
 環境構築でロボット側で作成したプログラムをティーチペンダントから起動する。
-ros2のドライバ起動ターミナルに`reverse control connected`のようなメッセージが出れば正常に起動されている。
+ros2のドライバ起動ターミナルに`Robot connected to reverse interface. Ready to receive control commands.`のようなメッセージが出れば正常に起動されている。
 
 #### 3. MoveIt2を起動
 逆運動学計算をする`moveit_servo`が起動するので、自作プログラムで操作する場合も起動する。
@@ -51,6 +51,7 @@ python3 xxx.py
 ```bash
 ros2 service call /servo_node/start_servo std_srvs/srv/Trigger
 ```
+- ``
 
 - TFセンサの値を取得
 ```bash
@@ -58,3 +59,8 @@ ros2 topic echo /force_torque_sensor_broadcaster/wrench
 ```
 
 - urdfとsrdfでur5とtfセンサを繋げたモデルを作るのは現状うまくいっていない。(使っていない。)
+
+- RealSense
+```bash
+ros2 launch realsense2_camera rs_pointcloud_launch.py
+```

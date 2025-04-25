@@ -14,6 +14,8 @@ RUN apt-get update -q && apt-get install -y --no-install-recommends \
     ros-humble-ros2-control \
     ros-humble-ros2-controllers \
     ros-humble-ur \
+    ros-humble-librealsense2* \
+    ros-humble-realsense2-camera \
     && rm -rf /var/lib/apt/lists/*
 
 

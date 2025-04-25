@@ -16,10 +16,10 @@ from collections import deque
 TARGET_FORCE_Z = 5.0  # ツール軸方向（Z軸）の目標押し付け力[N]
 MIN_FORCE = 0.5
 MAX_FORCE = 20.0
-MAX_VELOCITY = 0.2
+MAX_VELOCITY = 0.4
 FORCE_ERR_TORLERANCE = TARGET_FORCE_Z*0.1  # 力の誤差許容範
 SENSOR_AVERAGE_WINDOW = 10  # センサ値の移動平均ウィンドウサイズ
-KP = -8.0
+KP = -6.0
 KD = -0.1
 
 
