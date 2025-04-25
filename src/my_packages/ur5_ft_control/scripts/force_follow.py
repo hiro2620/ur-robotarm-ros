@@ -9,11 +9,12 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import WrenchStamped
 from geometry_msgs.msg import TwistStamped
+from std_srvs.srv import Trigger
 from std_msgs.msg import Header
 import numpy as np
 
-FORCE_THRESHOLD = 10.0  # N, 閾値
-VELOCITY_SCALE = 0.1   # スケーリング係数（力を速度に変換する際の係数）
+FORCE_THRESHOLD = 3.0  # N, 閾値
+VELOCITY_SCALE = 0.5   # スケーリング係数（力を速度に変換する際の係数）
 
 class ForceFollowNode(Node):
     def __init__(self):
@@ -24,6 +25,20 @@ class ForceFollowNode(Node):
             self.wrench_callback,
             10)
         self.twist_pub = self.create_publisher(TwistStamped, '/servo_node/delta_twist_cmds', 10)
+
+        # /servo_node/start_servoサービスを呼び出す
+        client = self.create_client(Trigger, '/servo_node/start_servo')
+        if not client.wait_for_service(timeout_sec=5.0):
+            self.get_logger().error('/servo_node/start_servo service not available!')
+        else:
+            req = Trigger.Request()
+            future = client.call_async(req)
+            rclpy.spin_until_future_complete(self, future, timeout_sec=5.0)
+            if future.result() is not None and future.result().success:
+                self.get_logger().info('Successfully called /servo_node/start_servo service.')
+            else:
+                self.get_logger().error('Failed to call /servo_node/start_servo service.')
+
         self.initial_force = None  # 初期値を保存
         self.get_logger().info('ForceFollowNode started with velocity control.')
 
