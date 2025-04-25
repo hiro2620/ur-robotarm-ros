@@ -34,9 +34,11 @@ RUN apt-get update -q && \
 # Build the workspace
 RUN . /opt/ros/humble/setup.sh && colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
 
+# Uncomment force_color_prompt in /root/.bashrc
+RUN sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /root/.bashrc
+
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc && \
     echo "source /ros2_ws/install/setup.bash" >> ~/.bashrc
-
 
 ENTRYPOINT []
 CMD ["/bin/bash"]

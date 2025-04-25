@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: ur_ros2
+    hostname: robot
     ports:
       - 50002:50002
     environment:
